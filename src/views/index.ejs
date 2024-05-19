@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sleep Tracker API Client</title>
+</head>
+<body>
+    <h1>Sleep Tracker API Client</h1>
+
+    <!-- Form to create a new sleep record -->
+    <h2>Create Sleep Record</h2>
+    <form id="createSleepForm">
+        <label for="userId">User ID:</label>
+        <input type="text" id="userId" name="userId" required>
+        <br>
+        <label for="hours">Hours:</label>
+        <input type="number" id="hours" name="hours" required>
+        <br>
+        <label for="timestamp">Timestamp:</label>
+        <input type="datetime-local" id="timestamp" name="timestamp" required>
+        <br>
+        <button type="submit">Create</button>
+    </form>
+    <p id="createResult"></p>
+
+    <!-- Form to get sleep records for a user -->
+    <h2>Get Sleep Records</h2>
+    <form id="getSleepForm">
+        <label for="getUserId">User ID:</label>
+        <input type="text" id="getUserId" name="getUserId" required>
+        <br>
+        <button type="submit">Get Records</button>
+    </form>
+    <pre id="getResult"></pre>
+
+    <!-- Form to delete a sleep record -->
+    <h2>Delete Sleep Record</h2>
+    <form id="deleteSleepForm">
+        <label for="recordId">Record ID:</label>
+        <input type="text" id="recordId" name="recordId" required>
+        <br>
+        <button type="submit">Delete</button>
+    </form>
+    <p id="deleteResult"></p>
+
+    <script>
+        document.getElementById('createSleepForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const userId = document.getElementById('userId').value;
+            const hours = document.getElementById('hours').value;
+            const timestamp = document.getElementById('timestamp').value;
+
+            fetch('/api/sleep', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, hours, timestamp })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('createResult').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                document.getElementById('createResult').textContent = 'Error: ' + error;
+            });
+        });
+
+        document.getElementById('getSleepForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const userId = document.getElementById('getUserId').value;
+
+            fetch(`/api/sleep/${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('getResult').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                document.getElementById('getResult').textContent = 'Error: ' + error;
+            });
+        });
+
+        document.getElementById('deleteSleepForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const recordId = document.getElementById('recordId').value;
+
+            fetch(`/api/sleep/${recordId}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.status === 204) {
+                    document.getElementById('deleteResult').textContent = 'Record deleted successfully';
+                } else {
+                    return response.json().then(data => {
+                        document.getElementById('deleteResult').textContent = 'Error: ' + JSON.stringify(data, null, 2);
+                    });
+                }
+            })
+            .catch(error => {
+                document.getElementById('deleteResult').textContent = 'Error: ' + error;
+            });
+        });
+    </script>
+</body>
+</html>
